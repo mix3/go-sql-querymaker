@@ -1,6 +1,7 @@
 package querymaker
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -31,7 +32,7 @@ func newQueryMaker(column interface{}, asSql asSql, bind ...interface{}) *QueryM
 	for _, v := range bind {
 		switch v.(type) {
 		case IHash, Array:
-			panic(fmt.Sprintf("cannot bind an Array or an IHash"))
+			panic(errors.New("cannot bind an Array or an IHash"))
 		default:
 		}
 	}
@@ -69,10 +70,10 @@ func andOrOp(fn string, args ...interface{}) *QueryMaker {
 	column, args = util.Shift(args)
 	switch t := tmpOpArgs.(type) {
 	default:
-		panic(fmt.Sprintf("arguments to `%s` must be contained in an Array or a IHash", op))
+		panic(fmt.Errorf("arguments to `%s` must be contained in an Array or a IHash", op))
 	case IHash:
 		if column != nil {
-			panic(fmt.Sprintf("cannot specify the column name as another argument when the conditions are listed using IHash"))
+			panic(fmt.Errorf("cannot specify the column name as another argument when the conditions are listed using IHash"))
 		}
 		conds := Array{}
 		for _, col := range t.Keys() {
@@ -102,7 +103,7 @@ func andOrOp(fn string, args ...interface{}) *QueryMaker {
 			switch t := arg.(type) {
 			default:
 				if column == nil {
-					panic(fmt.Sprintf("no column binding for %s", fn))
+					panic(fmt.Errorf("no column binding for %s", fn))
 				}
 				terms = append(terms, "("+quoteCb(column)+" = ?)")
 			case *QueryMaker:
@@ -136,13 +137,13 @@ func inNotInOp(fn string, args ...interface{}) *QueryMaker {
 	column, args = util.Shift(args)
 	switch t := tmpOpArgs.(type) {
 	default:
-		panic(fmt.Sprintf("arguments to `%s` must be contained in Array", op))
+		panic(fmt.Errorf("arguments to `%s` must be contained in Array", op))
 	case Array:
 		opArgs = t
 	}
 	return newQueryMaker(column, func(column interface{}, quoteCb quoteCb) string {
 		if column == nil {
-			panic(fmt.Sprintf("no column binding for %s", fn))
+			panic(fmt.Errorf("no column binding for %s", fn))
 		}
 		if len(opArgs) == 0 {
 			if op == "IN" {
@@ -207,7 +208,7 @@ func fnOp(fn string, args ...interface{}) *QueryMaker {
 		column, args = util.Shift(args)
 	}
 	if numArgs != len(args) {
-		panic(fmt.Sprintf("the operator expects %d parameters, but got %d", numArgs, len(args)))
+		panic(fmt.Errorf("the operator expects %d parameters, but got %d", numArgs, len(args)))
 	}
 	return sqlOp(fn, builder, column, args...)
 }
@@ -219,7 +220,7 @@ func SqlOp(args ...interface{}) *QueryMaker {
 	opArgs := tmpOpArgs.(Array)
 	numArgs, builder := compileBuilder(fmt.Sprintf("%v", expr))
 	if numArgs != len(args) {
-		panic(fmt.Sprintf("the operator expects %d parameters, but got %d", numArgs, len(args)))
+		panic(fmt.Errorf("the operator expects %d parameters, but got %d", numArgs, len(args)))
 	}
 	column, args = util.Shift(args)
 	return sqlOp("SqlOp", builder, column, opArgs...)
@@ -228,7 +229,7 @@ func SqlOp(args ...interface{}) *QueryMaker {
 func sqlOp(fn string, builder builder, column interface{}, args ...interface{}) *QueryMaker {
 	return newQueryMaker(column, func(column interface{}, quoteCb quoteCb) string {
 		if column == nil {
-			panic(fmt.Sprintf(`no column binding for %s(args...)`, fn))
+			panic(fmt.Errorf(`no column binding for %s(args...)`, fn))
 		}
 		return builder(quoteCb(column))
 	}, args...)
@@ -254,7 +255,7 @@ func compileBuilder(expr string) (int, builder) {
 
 func (qm *QueryMaker) BindColumn(column interface{}) {
 	if column != nil && qm.column != nil {
-		panic(fmt.Sprintf("cannot rebind column for `%v` to: `%v`", qm.column, column))
+		panic(fmt.Errorf("cannot rebind column for `%v` to: `%v`", qm.column, column))
 	}
 	qm.column = column
 }
