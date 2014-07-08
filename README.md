@@ -58,4 +58,4 @@ query.Bind()  // (V1,V2)
 
 ## SEE ALSO
 
-Perl version is located at https://github.com/tokuhirom/SQL-Maker
+Perl version is located at https://github.com/kazuho/SQL-QueryMaker
