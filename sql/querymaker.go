@@ -279,8 +279,8 @@ func (qm *QueryMaker) Bind() []interface{} {
 
 var quoteIdentifier = func(label interface{}) string {
 	tmp := []string{}
-	for _, v := range strings.Split(fmt.Sprintf("%v", label), `\.`) {
+	for _, v := range strings.Split(fmt.Sprintf("%v", label), `.`) {
 		tmp = append(tmp, "`"+v+"`")
 	}
-	return strings.Join(tmp, `\.`)
+	return strings.Join(tmp, `.`)
 }

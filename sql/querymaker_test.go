@@ -1,7 +1,9 @@
 package querymaker
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -133,4 +135,18 @@ func TestArrayInBind(t *testing.T) {
 	checkErr(t, func() *QueryMaker {
 		return SqlAnd("a", Array{Array{1, 2}, 3})
 	})
+}
+
+func TestAsSqlWithQuoteCb(t *testing.T) {
+	func() {
+		query := SqlEq("foo.bar", "baz")
+		expect(t, query.AsSql(Option{QuoteCb: func(label interface{}) string {
+			tmp := []string{}
+			for _, v := range strings.Split(fmt.Sprintf("%v", label), `.`) {
+				tmp = append(tmp, `"`+v+`"`)
+			}
+			return strings.Join(tmp, `.`)
+		}}), `"foo"."bar" = ?`)
+		expect(t, query.Bind(), []interface{}{"baz"})
+	}()
 }
