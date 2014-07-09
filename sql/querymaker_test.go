@@ -77,6 +77,11 @@ func TestCheatSheet(t *testing.T) {
 		expect(t, query.Bind(), []interface{}{"oranges"})
 	}()
 	func() {
+		query := SqlOp("foo_id", "IN (SELECT foo_id FROM bar WHERE t=?)", Array{44})
+		expect(t, query.AsSql(), "`foo_id` IN (SELECT foo_id FROM bar WHERE t=?)")
+		expect(t, query.Bind(), []interface{}{44})
+	}()
+	func() {
 		query := SqlRaw("SELECT * FROM t WHERE id=?", 123)
 		expect(t, query.AsSql(), "SELECT * FROM t WHERE id=?")
 		expect(t, query.Bind(), []interface{}{123})

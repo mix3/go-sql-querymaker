@@ -219,8 +219,8 @@ func SqlOp(args ...interface{}) *QueryMaker {
 	expr, args = util.Pop(args)
 	opArgs := tmpOpArgs.(Array)
 	numArgs, builder := compileBuilder(fmt.Sprintf("%v", expr))
-	if numArgs != len(args) {
-		panic(fmt.Errorf("the operator expects %d parameters, but got %d", numArgs, len(args)))
+	if numArgs != len(opArgs) {
+		panic(fmt.Errorf("the operator expects %d parameters, but got %d", numArgs, len(opArgs)))
 	}
 	column, args = util.Shift(args)
 	return sqlOp("SqlOp", builder, column, opArgs...)
